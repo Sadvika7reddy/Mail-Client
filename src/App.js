@@ -1,14 +1,18 @@
 
 import './App.css';
 import SignUp from './component/signUp';
-
+import { Route } from 'react-router-dom/cjs/react-router-dom';
+import Welcome from './component/welcome';
 function App() {
   return (
-    <div>
-      <header >
+    <>
+      <Route path='/' exact>
         <SignUp/>
-      </header>
-    </div>
+      </Route>
+      <Route path='/welcome'>
+        <Welcome/>
+      </Route>
+    </>
   );
 }
 

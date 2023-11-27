@@ -1,42 +1,75 @@
 import React from 'react'
-import { useRef } from 'react'
+import { useRef,useState } from 'react'
 import classes from "./signUp.module.css"
-
+import { useHistory } from 'react-router-dom/cjs/react-router-dom'
 
 const SignUp = () => {
-
+    const history=useHistory();
     const emailInputRef=useRef();
     const passwordInputRef=useRef();
     const confirmpasswordInputRef=useRef();
+    const [isLogin,setIsLogin]=useState(false)
+    const switchHandler=()=>{
+        setIsLogin((prevstate)=>!prevstate)
+    }
+    console.log(isLogin)
 
 const sumbitHandler=(event)=>{
    event.preventDefault();
    const enteredEmail=emailInputRef.current.value;
-   const enterdPassword=passwordInputRef.current.value;
-   const confirmPassword=confirmpasswordInputRef.current.value
-   if(enterdPassword==confirmPassword){
-    fetch("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCAT6faiNgXuT7MT5dX38X3JGuIrraTrCo",{
-         method:'POST',
-         body:JSON.stringify({
+   const enteredPassword=passwordInputRef.current.value;
+   let confirmPassword;
+    if (!isLogin) {
+      confirmPassword = confirmpasswordInputRef.current.value;
+    }
+    let url;
+    if(isLogin){
+      url='https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyCAT6faiNgXuT7MT5dX38X3JGuIrraTrCo';
+    }
+    else{
+      url='https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCAT6faiNgXuT7MT5dX38X3JGuIrraTrCo'
+    }
+      fetch(url,{
+        method:'POST',
+        body:JSON.stringify(
+          {
             email:enteredEmail,
-            password:enterdPassword,
+            password:enteredPassword,
             returnSecureToken:true
-         }),
-         headers:{
-            "content-Type":"application/json"
-         }
-    })
-    .then((res)=>console.log("user has succefully loggin"))
-    .catch((err)=>alert("failed to signUp"))
+          }
+        ),
+        headers :{
+          'Content-Type':'application/json'
+        }
+      }
+      ).then(res=>{
+        if(res.ok){
+          return res.json();
+
+        }
+        else{
+          return res.json().then((data)=>{
+            let errorMessage='Authenticated Failed';
+            throw new Error(errorMessage);
+          })
+        }
+      }).then((data)=>{
+        localStorage.setItem("token",data.idToken)
+        history.push('/welcome')
+        
+        
+      })
+      .catch((err)=>{
+        alert(err.message)
+      })
+
+  
    }
-   else{
-    alert("password mismatched")
-   }
-}
+  
 
   return (
     <section className={classes.auth}>
-        <h1>SignUp</h1>
+        <h1>{isLogin?"Login":"SignUp"}</h1>
         <form onSubmit={sumbitHandler}>
             <div className={classes.control}>
                <label>Enter Email</label>
@@ -46,14 +79,17 @@ const sumbitHandler=(event)=>{
               <label>Enter Password</label>
                <input id='password' type='password' required ref={passwordInputRef}/>
             </div>
-           <div className={classes.control}>
+           {!isLogin&&<div className={classes.control}>
                 <label>Confirm Password</label>
                 <input id='password' type='password' required ref={confirmpasswordInputRef}/> 
-           </div>      
+           </div> }     
             <div className={classes.actions}>
-                <button>SignUp</button>
+                <button>{isLogin?'Login':"SignUp"}</button>
             </div>
         </form>
+        <div className={classes.actions}>
+            <button onClick={switchHandler}>{isLogin?"Alread have account?Login":"Don't have an account? signUp"}</button>
+        </div>
     </section>
   )
 }
