@@ -2,6 +2,8 @@ import React from 'react'
 import { useRef,useState } from 'react'
 import classes from "./signUp.module.css"
 import { useHistory } from 'react-router-dom/cjs/react-router-dom'
+import { useDispatch } from "react-redux";
+import { authActions } from '../store/authSlice';
 
 const SignUp = () => {
     const history=useHistory();
@@ -9,6 +11,7 @@ const SignUp = () => {
     const passwordInputRef=useRef();
     const confirmpasswordInputRef=useRef();
     const [isLogin,setIsLogin]=useState(false)
+    const dispatch=useDispatch();
     const switchHandler=()=>{
         setIsLogin((prevstate)=>!prevstate)
     }
@@ -54,7 +57,9 @@ const sumbitHandler=(event)=>{
           })
         }
       }).then((data)=>{
-        localStorage.setItem("token",data.idToken)
+       
+        dispatch(authActions.login(data.idToken))
+        dispatch(authActions.setUserId(enteredEmail))
         history.push('/welcome')
         
         
@@ -88,7 +93,7 @@ const sumbitHandler=(event)=>{
             </div>
         </form>
         <div className={classes.actions}>
-            <button onClick={switchHandler}>{isLogin?"Alread have account?Login":"Don't have an account? signUp"}</button>
+            <button onClick={switchHandler}>{!isLogin?"Alread have account?Login":"Don't have an account? signUp"}</button>
         </div>
     </section>
   )
